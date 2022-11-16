@@ -2,7 +2,6 @@ import datetime
 import random
 
 from message import Message
-from processor import Processor
 from threading import Timer
 
 
