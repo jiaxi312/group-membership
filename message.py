@@ -1,6 +1,3 @@
-from channel import Channel
-
-
 class Message:
     """Message class that can broadcast a message or send a datagram message
 
@@ -9,26 +6,26 @@ class Message:
 
     Attributes:
         _message_id: A int represents the id of this message
-        _sender_id: A int represents the id of the Processor sending the message.
-        _receiver_id: A int represents the id of the Processor receiving the message, it could be None if the message
-                      is intended for broadcasting.
+        _sender: A Processor represents the Processor sending the message.
+        _receiver: A Processor represents the Processor receiving the message, it could be None if the message
+                   is intended for broadcasting.
         _channel: A Channel represents the channel that the message will be delivered through
     """
 
-    def __init__(self, message_id, sender_id, channel: Channel):
+    def __init__(self, message_id, sender, channel):
         self._message_id = message_id
-        self._sender_id = sender_id
-        self._receiver_id = None
+        self._sender = sender
+        self._receiver = None
         self._channel = channel
 
     def broadcast(self):
         """Broadcasts this message"""
         raise NotImplementedError("Communication System is not implemented yet")
 
-    def send(self, receiver_id):
+    def send(self, receiver):
         """Sends the datagram message to given Processor id"""
-        self._receiver_id = receiver_id
-        raise NotImplementedError("Communication System is not implemented yet")
+        self._receiver = receiver
+        self._channel.send_message(self)
 
     @property
     def id(self):
@@ -36,8 +33,13 @@ class Message:
 
     @property
     def sender(self):
-        return self._sender_id
+        return self._sender
 
     @property
     def receiver(self):
-        return self._receiver_id
+        return self._receiver
+
+    def __eq__(self, other):
+        if type(other) == Message:
+            return other.id == self.id
+        return False
