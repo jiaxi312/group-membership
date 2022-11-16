@@ -1,3 +1,4 @@
+from channel import Channel
 from message import Message
 from processor import Processor
 import datetime
@@ -10,8 +11,9 @@ def main():
     print(now)
     print(p.clock)
     print(p)
-    m = Message(1)
-    print(m.sender)
+    c = Channel()
+    c.register_processor(p)
+    print(3 in c)
 
 
 if __name__ == '__main__':

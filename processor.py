@@ -63,5 +63,10 @@ class Processor:
         tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
         return datetime.datetime.fromtimestamp(now + self._clock_diff, tz=tz)
 
+    def __eq__(self, other):
+        if type(other) == Processor:
+            return other.id == self.id
+        return False
+
     def __str__(self):
         return f'Processor {self.id}, group: {self.group}, clock diff: {self._clock_diff}'
