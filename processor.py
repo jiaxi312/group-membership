@@ -31,6 +31,14 @@ class Processor:
         self._membership = []
         self._clock_diff = (random.random() - 0.5) * max_clock_sync_error
 
+    def send(self):
+        """Sends the given message to target processor"""
+        raise NotImplementedError
+
+    def broadcast(self):
+        """Broadcasts the message to all correct processors"""
+        raise NotImplementedError
+
     """Class properties"""
     @property
     def id(self):
