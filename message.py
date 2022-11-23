@@ -18,15 +18,6 @@ class Message:
         self._receiver = None
         self._channel = channel
 
-    def broadcast(self):
-        """Broadcasts this message"""
-        raise NotImplementedError("Communication System is not implemented yet")
-
-    def send(self, receiver):
-        """Sends the datagram message to given Processor id"""
-        self._receiver = receiver
-        self._channel.send_message(self)
-
     @property
     def id(self):
         return self._message_id
@@ -38,6 +29,10 @@ class Message:
     @property
     def receiver(self):
         return self._receiver
+
+    @receiver.setter
+    def receiver(self, new_receiver):
+        self._receiver = new_receiver
 
     def __eq__(self, other):
         if type(other) == Message:

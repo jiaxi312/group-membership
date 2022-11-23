@@ -17,23 +17,27 @@ class Processor:
         _current_group: A int indicating the current group the processor belongs to
         _status: A int constant indicating the status of the Processor
         _membership: A list contains the Processor's view of its memberships in the _current_group
+        _channel: A Channel object where the processor is attached to
         _clock_diff: A float representing the clock synchronization error of this Processor clock from the master clock
     """
 
     NORMAL = 1
     CRASHED = -1
 
-    def __init__(self, id, max_clock_sync_error):
+    def __init__(self, id, channel, max_clock_sync_error):
         """ Inits the Processor with given max clock synchronization error """
         self._id = id
         self._current_group = None
         self._status = Processor.NORMAL
         self._membership = []
+        self._channel = channel
         self._clock_diff = (random.random() - 0.5) * max_clock_sync_error
 
-    def send(self):
+    def send(self, target):
         """Sends the given message to target processor"""
-        raise NotImplementedError
+        m = self._channel.create_message(self)
+        m.receiver = target
+        self._channel.send_message(m)
 
     def broadcast(self):
         """Broadcasts the message to all correct processors"""
@@ -42,10 +46,12 @@ class Processor:
     """Class properties"""
     @property
     def id(self):
+        """Returns the id of this processor"""
         return self._id
 
     @property
     def group(self):
+        """Returns the current group of this processor"""
         return self._current_group
 
     @group.setter
@@ -55,6 +61,7 @@ class Processor:
 
     @property
     def status(self):
+        """Returns the current status of this processor"""
         return self._status
 
     @status.setter

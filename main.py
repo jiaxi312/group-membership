@@ -7,16 +7,14 @@ import time
 
 def main():
     c = Channel(5, 5)
-    p1 = Processor(1, 10)
-    p2 = Processor(2, 10)
-    p3 = Processor(3, 10)
+    p1 = Processor(1, c, 10)
+    p2 = Processor(2, c, 10)
+    p3 = Processor(3, c, 10)
     c.register_processor(p1)
     c.register_processor(p2)
-    m = c.create_message(p1)
-
+    p1.send(p2)
     now = datetime.datetime.now()
     print(f'current time: {now}')
-    m.send(receiver=p3)
 
 
 if __name__ == '__main__':
