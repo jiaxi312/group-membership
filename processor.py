@@ -2,6 +2,8 @@ import random
 import time
 import datetime
 
+from message import Message
+
 
 class Processor:
     """A class represents a single Processor in the membership system
@@ -33,6 +35,12 @@ class Processor:
         self._channel = channel
         self._clock_diff = (random.random() - 0.5) * max_clock_sync_error
 
+    def init_join(self, broadcast_delay):
+        """Initializes the join process, broadcasting the new-group message to all correct processors."""
+        m = self._channel.create_message(self, Message.NEW_GROUP)
+        m.content = self.clock + datetime.timedelta(seconds=broadcast_delay)
+        self._channel.broadcast(m)
+
     def send(self, target):
         """Sends the given message to target processor"""
         m = self._channel.create_message(self)
@@ -41,6 +49,12 @@ class Processor:
 
     def broadcast(self):
         """Broadcasts the message to all correct processors"""
+        raise NotImplementedError
+
+    def receive(self, msg):
+        """Handles the message receiving based on message type."""
+        if msg.type == Message.NEW_GROUP:
+            return None
         raise NotImplementedError
 
     """Class properties"""
@@ -72,7 +86,7 @@ class Processor:
     def clock(self):
         """Returns the clock reading of this Processor
 
-        The reading is computed as H(t)+A where H(t) is the standard current time
+        The reading is computed as H(t)+A where H(t) is the standard time in current time zone
         """
         now = time.time()
         tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo

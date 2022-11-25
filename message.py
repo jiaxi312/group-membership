@@ -10,13 +10,20 @@ class Message:
         _receiver: A Processor represents the Processor receiving the message, it could be None if the message
                    is intended for broadcasting.
         _channel: A Channel represents the channel that the message will be delivered through
+        _msg_type: A int represents the type of this message
     """
 
-    def __init__(self, message_id, sender, channel):
+    NEW_GROUP = 1
+    ATTENDANCE_LIST = 2
+    PRESENT = 3
+
+    def __init__(self, message_id, sender, channel, msg_type=NEW_GROUP):
         self._message_id = message_id
         self._sender = sender
         self._receiver = None
         self._channel = channel
+        self._msg_type = msg_type
+        self._content = None
 
     @property
     def id(self):
@@ -27,12 +34,24 @@ class Message:
         return self._sender
 
     @property
+    def type(self):
+        return self._msg_type
+
+    @property
     def receiver(self):
         return self._receiver
 
     @receiver.setter
     def receiver(self, new_receiver):
         self._receiver = new_receiver
+
+    @property
+    def content(self):
+        return self._content
+
+    @content.setter
+    def content(self, new_content):
+        self._content = new_content
 
     def __eq__(self, other):
         if type(other) == Message:
