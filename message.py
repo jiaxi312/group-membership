@@ -16,14 +16,17 @@ class Message:
     NEW_GROUP = 1
     ATTENDANCE_LIST = 2
     PRESENT = 3
+    ID_COUNT = 0
 
-    def __init__(self, message_id, sender, channel, msg_type=NEW_GROUP):
-        self._message_id = message_id
+    def __init__(self, sender, channel, msg_type=NEW_GROUP):
+        self._message_id = Message.ID_COUNT
         self._sender = sender
         self._receiver = None
         self._channel = channel
         self._msg_type = msg_type
         self._content = None
+
+        Message.ID_COUNT += 1
 
     @property
     def id(self):
@@ -57,3 +60,6 @@ class Message:
         if type(other) == Message:
             return other.id == self.id
         return False
+
+    def __hash__(self):
+        return hash(self.id)

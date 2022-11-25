@@ -15,8 +15,14 @@ def main():
     c.register_processor(p2)
     c.register_processor(p3)
     p1.init_join(broadcast_delay)
+    p2.init_join(broadcast_delay)
+    p3.init_join(broadcast_delay)
     now = datetime.datetime.now()
     print(f'current time: {now}')
+    time.sleep(10)
+    print(p1)
+    print(p2)
+    print(p3)
 
 
 if __name__ == '__main__':

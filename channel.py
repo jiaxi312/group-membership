@@ -1,5 +1,6 @@
 import datetime
 import random
+import time
 
 from message import Message
 from processor import Processor
@@ -44,10 +45,7 @@ class Channel:
             A Message object with given sending Processor
         """
         self._assert_processor_registered(processor)
-
-        message_id = len(self._messages)
-        m = Message(message_id, processor, self, msg_type)
-        self._messages.append(m)
+        m = Message(processor, self, msg_type)
         return m
 
     @staticmethod

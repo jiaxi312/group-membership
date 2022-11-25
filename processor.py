@@ -16,7 +16,7 @@ class Processor:
 
     Attributes:
         _id: A int indicating the id of this Processor
-        _current_group: A int indicating the current group the processor belongs to
+        _current_group: A str indicating the current group the processor belongs to
         _status: A int constant indicating the status of the Processor
         _membership: A list contains the Processor's view of its memberships in the _current_group
         _channel: A Channel object where the processor is attached to
@@ -29,7 +29,7 @@ class Processor:
     def __init__(self, id, channel, max_clock_sync_error):
         """ Inits the Processor with given max clock synchronization error """
         self._id = id
-        self._current_group = None
+        self._current_group = ""
         self._status = Processor.NORMAL
         self._membership = []
         self._channel = channel
@@ -54,8 +54,12 @@ class Processor:
     def receive(self, msg):
         """Handles the message receiving based on message type."""
         if msg.type == Message.NEW_GROUP:
-            return None
+            self._handle_new_group_msg(msg)
+            return
         raise NotImplementedError
+
+    def _handle_new_group_msg(self, msg):
+        self._current_group = str(msg.content)
 
     """Class properties"""
     @property
@@ -70,7 +74,7 @@ class Processor:
 
     @group.setter
     def group(self, new_group):
-        assert type(new_group) == int
+        assert type(new_group) == str
         self._current_group = new_group
 
     @property
