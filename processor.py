@@ -60,11 +60,12 @@ class Processor:
         m.content = (V, self._membership)
         self._channel.broadcast(m)
 
-    def broadcast(self, V):
+    def schedule_broadcast(self, V):
         if self.clock <= V:
+            print(f'Send check in present message, id={self.id}')
             self.broadcast_present_msg(V)
-            delay = self._compute_time_diff(V)
-            self._check_timer = Timer(delay, self.broadcast_present_msg, args=[V])
+            self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
+                                      args=[V + datetime.timedelta(seconds=self._check_in_period)])
             self._check_timer.start()
 
     def receive(self, msg):
@@ -77,13 +78,17 @@ class Processor:
 
     def _handle_new_group_msg(self, msg):
         if self.clock > msg.content:
-            # the message is out dated
+            # the message is outdated
             return
         if self._check_timer is not None:
             self._check_timer.cancel()
-        self._membership = {self.id}
+        sender_id = msg.sender.id
+        self._membership = {self.id, sender_id}
         V = msg.content
-        self.broadcast(V)
+        self.broadcast_present_msg(V)
+        self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
+                                  args=[V + datetime.timedelta(seconds=self._check_in_period)])
+        self._check_timer.start()
 
     def _handle_present_msg(self, msg):
         V, sender_ids = msg.content
@@ -97,6 +102,7 @@ class Processor:
         return diff
 
     """Class properties"""
+
     @property
     def id(self):
         """Returns the id of this processor"""
