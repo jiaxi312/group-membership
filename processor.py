@@ -22,6 +22,8 @@ class Processor:
         _membership: A list contains the Processor's view of its memberships in the _current_group
         _channel: A Channel object where the processor is attached to
         _clock_diff: A float representing the clock synchronization error of this Processor clock from the master clock
+        _check_timer: A timer object that schedules sending the present message
+        _check_in_period: A float indicates the check in period for the processor
     """
 
     NORMAL = 1
@@ -30,20 +32,20 @@ class Processor:
     def __init__(self, id, channel, max_clock_sync_error, check_in_period):
         """ Inits the Processor with given max clock synchronization error """
         self._id = id
+        self._current_group = 0
         self._status = Processor.NORMAL
-        self._membership = {self.id}
+        self._membership = set()
         self._channel = channel
+        self._max_clock_sync_error = max_clock_sync_error
         self._clock_diff = (random.random() - 0.5) * max_clock_sync_error
         self._check_timer = None
         self._check_in_period = check_in_period
-        self._current_group = 0
 
     def init_join(self, broadcast_delay):
         """Initializes the join process, broadcasting the new-group message to all correct processors."""
-        self._current_group = self.clock
-        self._membership = {self.id}
+        self._membership = set()
         m = self._channel.create_message(self, Message.NEW_GROUP)
-        m.content = self.clock + datetime.timedelta(seconds=broadcast_delay)
+        m.content = self.clock + datetime.timedelta(seconds=broadcast_delay + self._max_clock_sync_error)
         self._channel.broadcast(m)
 
     def send(self, target):
@@ -52,17 +54,17 @@ class Processor:
         m.receiver = target
         self._channel.send_message(m)
 
-    def broadcast_present_msg(self):
+    def broadcast_present_msg(self, V):
         """Broadcasts the present message to all correct processors"""
         m = self._channel.create_message(self, Message.PRESENT)
-        m.content = (self.group, self._membership)
+        m.content = (V, self._membership)
         self._channel.broadcast(m)
 
     def broadcast(self, V):
         if self.clock <= V:
-            self.broadcast_present_msg()
+            self.broadcast_present_msg(V)
             delay = self._compute_time_diff(V)
-            self._check_timer = Timer(delay, self.broadcast_present_msg)
+            self._check_timer = Timer(delay, self.broadcast_present_msg, args=[V])
             self._check_timer.start()
 
     def receive(self, msg):
@@ -80,7 +82,7 @@ class Processor:
             return
         if self._check_timer is not None:
             self._check_timer.cancel()
-
+        self._membership = {self.id}
         V = msg.content
         self.broadcast(V)
 
@@ -136,4 +138,4 @@ class Processor:
         return False
 
     def __str__(self):
-        return f'Processor {self.id}, group: {self.group}, clock diff: {self._clock_diff}'
+        return f'Processor {self.id}, group members: {self._membership} clock diff: {self._clock_diff}'

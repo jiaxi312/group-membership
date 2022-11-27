@@ -7,10 +7,12 @@ import time
 
 def main():
     broadcast_delay, datagram_delay = 5, 5
+    max_clock_sync_error = 1
     c = Channel(broadcast_delay, datagram_delay)
-    p1 = Processor(1, c, 0, 3)
-    p2 = Processor(2, c, 0, 3)
-    p3 = Processor(3, c, 0, 3)
+    p1 = Processor(1, c, max_clock_sync_error, 10)
+    p2 = Processor(2, c, max_clock_sync_error, 10)
+    p3 = Processor(3, c, max_clock_sync_error, 10)
+    # p3.status = Processor.CRASHED
     c.register_processor(p1)
     c.register_processor(p2)
     c.register_processor(p3)
@@ -21,7 +23,7 @@ def main():
     p3.init_join(broadcast_delay)
     now = datetime.datetime.now()
     print(f'current time: {now}')
-    time.sleep(broadcast_delay + 1)
+    time.sleep(2 * (broadcast_delay + max_clock_sync_error) + 1)
     print(p1)
     print(p2)
     print(p3)

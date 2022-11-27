@@ -50,7 +50,6 @@ class Channel:
 
     @staticmethod
     def _send_message_to(message, processor):
-        now = datetime.datetime.now()
         processor.receive(message)
 
     def send_message(self, message):
@@ -62,7 +61,8 @@ class Channel:
 
     def broadcast(self, message):
         """Broadcasts the message to all correct processors registered in this channel. """
-        all_correct_processors = (p for p in self._all_processors if p.status == Processor.NORMAL)
+        all_correct_processors = (p for p in self._all_processors if
+                                  p.status == Processor.NORMAL and p != message.sender)
         for processor in all_correct_processors:
             delay = random.random() * self._broadcast_delay
             t = Timer(delay, self._send_message_to, args=(message, processor))
