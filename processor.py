@@ -69,7 +69,6 @@ class Processor:
 
     def receive(self, msg):
         """Handles the message receiving based on message type."""
-        print(f'processor: {self.id} receives message {msg}')
         if msg.type == Message.NEW_GROUP:
             self._handle_new_group_msg(msg)
         elif msg.type == Message.PRESENT:
