@@ -56,6 +56,9 @@ class Message:
     def content(self, new_content):
         self._content = new_content
 
+    def __str__(self):
+        return f'msg: {self.id}, type: {self.type}, sender: {self.sender.id}, content: {self.content}'
+
     def __eq__(self, other):
         if type(other) == Message:
             return other.id == self.id

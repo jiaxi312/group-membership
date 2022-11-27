@@ -51,14 +51,12 @@ class Channel:
     @staticmethod
     def _send_message_to(message, processor):
         now = datetime.datetime.now()
-        print(f'Processor: {processor.id} received the message (id={message.id}) at {now}')
         processor.receive(message)
 
     def send_message(self, message):
         self._assert_processor_registered(message.receiver)
 
         delay = random.random() * self._datagram_delay
-        print(f'delay for this message {delay}')
         t = Timer(delay, self._send_message_to, args=(message, message.receiver))
         t.start()
 
@@ -67,7 +65,6 @@ class Channel:
         all_correct_processors = (p for p in self._all_processors if p.status == Processor.NORMAL)
         for processor in all_correct_processors:
             delay = random.random() * self._broadcast_delay
-            print(f'delay for this message {delay}')
             t = Timer(delay, self._send_message_to, args=(message, processor))
             t.start()
 

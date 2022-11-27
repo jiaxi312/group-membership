@@ -3,6 +3,7 @@ import time
 import datetime
 
 from message import Message
+from threading import Timer
 
 
 class Processor:
@@ -26,17 +27,21 @@ class Processor:
     NORMAL = 1
     CRASHED = -1
 
-    def __init__(self, id, channel, max_clock_sync_error):
+    def __init__(self, id, channel, max_clock_sync_error, check_in_period):
         """ Inits the Processor with given max clock synchronization error """
         self._id = id
-        self._current_group = ""
         self._status = Processor.NORMAL
-        self._membership = []
+        self._membership = {self.id}
         self._channel = channel
         self._clock_diff = (random.random() - 0.5) * max_clock_sync_error
+        self._check_timer = None
+        self._check_in_period = check_in_period
+        self._current_group = 0
 
     def init_join(self, broadcast_delay):
         """Initializes the join process, broadcasting the new-group message to all correct processors."""
+        self._current_group = self.clock
+        self._membership = {self.id}
         m = self._channel.create_message(self, Message.NEW_GROUP)
         m.content = self.clock + datetime.timedelta(seconds=broadcast_delay)
         self._channel.broadcast(m)
@@ -47,19 +52,48 @@ class Processor:
         m.receiver = target
         self._channel.send_message(m)
 
-    def broadcast(self):
-        """Broadcasts the message to all correct processors"""
-        raise NotImplementedError
+    def broadcast_present_msg(self):
+        """Broadcasts the present message to all correct processors"""
+        m = self._channel.create_message(self, Message.PRESENT)
+        m.content = (self.group, self._membership)
+        self._channel.broadcast(m)
+
+    def broadcast(self, V):
+        if self.clock <= V:
+            self.broadcast_present_msg()
+            delay = self._compute_time_diff(V)
+            self._check_timer = Timer(delay, self.broadcast_present_msg)
+            self._check_timer.start()
 
     def receive(self, msg):
         """Handles the message receiving based on message type."""
+        print(f'processor: {self.id} receives message {msg}')
         if msg.type == Message.NEW_GROUP:
             self._handle_new_group_msg(msg)
-            return
-        raise NotImplementedError
+        elif msg.type == Message.PRESENT:
+            self._handle_present_msg(msg)
+        return
 
     def _handle_new_group_msg(self, msg):
-        self._current_group = str(msg.content)
+        if self.clock > msg.content:
+            # the message is out dated
+            return
+        if self._check_timer is not None:
+            self._check_timer.cancel()
+
+        V = msg.content
+        self.broadcast(V)
+
+    def _handle_present_msg(self, msg):
+        V, sender_ids = msg.content
+        if sender_ids != self._membership:
+            self._membership = sender_ids
+            self._membership.add(self.id)
+            self._current_group = V
+
+    def _compute_time_diff(self, V):
+        diff = V.timestamp() + self._check_in_period - self.clock.timestamp()
+        return diff
 
     """Class properties"""
     @property
