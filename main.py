@@ -6,14 +6,14 @@ import time
 
 
 def main():
-    broadcast_delay, datagram_delay = 5, 5
+    broadcast_delay, datagram_delay = 1, 1
     max_clock_sync_error = 1
     c = Channel(broadcast_delay, datagram_delay)
-    p1 = Processor(1, c, max_clock_sync_error, 20)
-    p2 = Processor(2, c, max_clock_sync_error, 20)
-    p3 = Processor(3, c, max_clock_sync_error, 20)
-    p4 = Processor(4, c, max_clock_sync_error, 20)
-    p5 = Processor(5, c, max_clock_sync_error, 20)
+    p1 = Processor(1, c, max_clock_sync_error, 5)
+    p2 = Processor(2, c, max_clock_sync_error, 5)
+    p3 = Processor(3, c, max_clock_sync_error, 5)
+    p4 = Processor(4, c, max_clock_sync_error, 5)
+    p5 = Processor(5, c, max_clock_sync_error, 5)
     # p3.status = Processor.CRASHED
     c.register_processor(p1)
     c.register_processor(p2)
@@ -31,6 +31,24 @@ def main():
     now = datetime.datetime.now()
     print(f'current time: {now}')
     time.sleep(2 * (broadcast_delay + max_clock_sync_error) + 1)
+    print(p1)
+    print(p2)
+    print(p3)
+    print(p4)
+    print(p5)
+    time.sleep(5)
+    p4.status = Processor.CRASHED
+    print('p4 has crashed')
+    time.sleep(3 * (broadcast_delay + max_clock_sync_error) + 5)
+    print(p1)
+    print(p2)
+    print(p3)
+    print(p4)
+    print(p5)
+    time.sleep(5)
+    p2.status = Processor.CRASHED
+    print('p2 has crashed')
+    time.sleep(3 * (broadcast_delay + max_clock_sync_error) + 5)
     print(p1)
     print(p2)
     print(p3)

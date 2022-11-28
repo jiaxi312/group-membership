@@ -61,6 +61,8 @@ class Channel:
 
     def broadcast(self, message):
         """Broadcasts the message to all correct processors registered in this channel. """
+        if message.sender.status == Processor.CRASHED:
+            return
         all_correct_processors = (p for p in self._all_processors if
                                   p.status == Processor.NORMAL and p != message.sender)
         for processor in all_correct_processors:
@@ -70,6 +72,10 @@ class Channel:
 
     def _assert_processor_registered(self, processor):
         assert processor in self._all_processors, f"Processor(id={processor.id}) not registered in this channel"
+
+    @property
+    def broadcast_delay(self):
+        return self._broadcast_delay
 
     def __contains__(self, item):
         return item in self._all_processors

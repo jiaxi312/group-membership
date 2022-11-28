@@ -40,9 +40,12 @@ class Processor:
         self._clock_diff = (random.random() - 0.5) * max_clock_sync_error
         self._check_timer = None
         self._check_in_period = check_in_period
+        self._check_in_ids_count = {}
 
     def init_join(self, broadcast_delay):
         """Initializes the join process, broadcasting the new-group message to all correct processors."""
+        print(f'processor {self.id} init group')
+        # print(f'{self._check_in_ids_count}, {self._membership}')
         self._membership = set()
         m = self._channel.create_message(self, Message.NEW_GROUP)
         m.content = self.clock + datetime.timedelta(seconds=broadcast_delay + self._max_clock_sync_error)
@@ -64,9 +67,33 @@ class Processor:
         if self.clock <= V:
             print(f'Send check in present message, id={self.id}')
             self.broadcast_present_msg(V)
+            t = Timer(self._channel.broadcast_delay + self._max_clock_sync_error + 1,
+                      self._check_membership)
+            t.start()
             self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
                                       args=[V + datetime.timedelta(seconds=self._check_in_period)])
             self._check_timer.start()
+
+    def periodic_broad_cast_check(self, V):
+        self._check_in_ids_count = {self.id}
+        self.broadcast_present_msg(V)
+        t = Timer(self._channel.broadcast_delay + self._max_clock_sync_error,
+                  self._check_membership)
+        t.start()
+
+    def _check_membership(self):
+        if set(self._check_in_ids_count.keys()) != self._membership:
+            self.init_join(self._channel.broadcast_delay)
+            return
+        count = -1
+        for key, value in self._check_in_ids_count.items():
+            if key == self.id:
+                continue
+            elif count == -1:
+                count = value
+            elif count != value:
+                self.init_join(self._channel.broadcast_delay)
+                break
 
     def receive(self, msg):
         """Handles the message receiving based on message type."""
@@ -95,7 +122,10 @@ class Processor:
         if sender_ids != self._membership:
             self._membership = sender_ids
             self._membership.add(self.id)
+            self._check_in_ids_count = {id: 0 for id in self._membership}
             self._current_group = V
+        elif msg.sender.id in self._check_in_ids_count:
+            self._check_in_ids_count[msg.sender.id] += 1
 
     def _compute_time_diff(self, V):
         diff = V.timestamp() + self._check_in_period - self.clock.timestamp()
@@ -143,4 +173,4 @@ class Processor:
         return False
 
     def __str__(self):
-        return f'Processor {self.id}, group members: {self._membership} clock diff: {self._clock_diff}'
+        return f'Processor {self.id}, group members: {self._membership} {self._check_in_ids_count}'
