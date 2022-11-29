@@ -21,7 +21,7 @@ function fetchAndDisplayAllProcessors() {
             let list = document.querySelector('ul')
             for (let processor of data) {
                 let node = document.createElement('li');
-                node.appendChild(document.createTextNode(processor));
+                node.appendChild(document.createTextNode(`Processor ${processor.id}, members: ${processor.members}`));
                 list.appendChild(node);
             }
         });
