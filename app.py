@@ -1,17 +1,14 @@
 from channel import Channel
 from processor import Processor
 
-from flask import Flask, render_template, jsonify, Response
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
-properties = {'max_clock_sync_error': 1, 'broadcast_delay': 1, 'datagram_delay': 1, 'channel': None,
-              'check_in_period': 5}
+properties = {}
 
 
 @app.route('/')
 def index():
-    setup()
-    print(*properties['channel'].processors)
     return render_template('index.html')
 
 
@@ -27,18 +24,28 @@ def get_all_processors():
 @app.route('/join')
 def init_join_for_all_processors():
     for processor in properties['channel'].processors:
-        print(f'Processor {processor.id} init join')
         processor.init_join()
     return '', 200
 
 
-def setup():
-    if properties['channel'] is not None:
-        return
-    properties['channel'] = Channel(properties['broadcast_delay'], properties['datagram_delay'])
-    for _ in range(5):
-        p = Processor(properties['channel'], properties['max_clock_sync_error'], properties['check_in_period'])
-        properties['channel'].register_processor(p)
+@app.route('/init-processors', methods=['POST'])
+def init_processors():
+    data = request.json
+    print(data)
+    for key, value in data.items():
+        data[key] = int(value)
+    setup(data)
+    init_join_for_all_processors()
+    return '', 200
+
+
+def setup(kwargs):
+    properties.update(kwargs)
+    channel = Channel(properties['broadcast_delay'], properties['datagram_delay'])
+    for _ in range(int(properties['num_processors'])):
+        p = Processor(channel, properties['max_clock_sync_error'], properties['check_in_period'])
+        channel.register_processor(p)
+    properties['channel'] = channel
 
 
 if __name__ == '__main__':

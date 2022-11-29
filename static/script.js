@@ -1,13 +1,36 @@
-function init() {
-    console.log("Helle from group membership")
+function startButtonOnclick() {
+    console.log("Start clicked");
+    const url = '/init-processors'
+    let numProcessors = document.getElementById('num_processors').value;
+    let maxClockSyncError = document.getElementById('clock_sync_error').value;
+    let broadcastDelay = document.getElementById('broadcast_delay').value;
+    let datagramDelay = document.getElementById('datagram_delay').value;
+    let checkInPeriod = document.getElementById('check_in_period').value;
 
-    let node = document.createElement('li')
-    node.appendChild(document.createTextNode('Processor created by JS'))
-
-    let list = document.querySelector('ul')
-    list.appendChild(node)
-    fetchAndDisplayAllProcessors();
-
+    if (!isCheckInPeriodValid(maxClockSyncError, broadcastDelay, datagramDelay, checkInPeriod)) {
+        alert('Error !!! Check in period is too small');
+    } else {
+        let data = {
+            num_processors: numProcessors,
+            max_clock_sync_error: maxClockSyncError,
+            broadcast_delay: broadcastDelay,
+            datagram_delay: datagramDelay,
+            check_in_period: checkInPeriod
+        }
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        }).then((response) => {
+            if (response.status !== 200) {
+                alert(`Request return status error!!! Status:${response.status}`);
+            } else {
+                fetchAndDisplayAllProcessors();
+            }
+        });
+    }
 }
 
 /**
@@ -19,10 +42,24 @@ function fetchAndDisplayAllProcessors() {
         .then((response) => response.json())
         .then((data) => {
             let list = document.querySelector('ul')
+            removeAllChildNodes(list);
             for (let processor of data) {
                 let node = document.createElement('li');
                 node.appendChild(document.createTextNode(`Processor ${processor.id}, members: ${processor.members}`));
                 list.appendChild(node);
             }
         });
+}
+
+function removeAllChildNodes(parent) {
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+}
+
+/**
+ * Returns true if the check in period is a valid value
+ */
+function isCheckInPeriodValid(maxClockSyncError, broadcastDelay, datagramDelay, checkInPeriod) {
+    return checkInPeriod >= maxClockSyncError + broadcastDelay;
 }

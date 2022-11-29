@@ -5,7 +5,23 @@
     <title>Group Membership Virtualization</title>
     <script src="/static/script.js"></script>
 </head>
-<body onload="init()">
+<body onload="fetchAndDisplayAllProcessors()">
+    <label for="num_processors">Number of Processors:</label>
+    <input type="number" id="num_processors" name="num_processors" min="1" max="10" value="1" required>
+    <p></p>
+    <label for="clock_sync_error">Max clock sync error (s):</label>
+    <input type="number" id="clock_sync_error" name="clock_sync_error" min="1" max="10" value="1" required>
+    <p></p>
+    <label for="broadcast_delay">Broadcast delay (s): </label>
+    <input type="number" id="broadcast_delay" name="broadcast_delay" min="1" max="100" value="1" required>
+    <p></p>
+    <label for="datagram_delay">Datagram delay (s): </label>
+    <input type="number" id="datagram_delay" name="datagram_delay" min="1" max="100" value="1" required>
+    <p></p>
+    <label for="check_in_period">Check in period (s):</label>
+    <input type="number" id="check_in_period" name="check_in_period" min="1" max="500" value="5" required>
+    <p></p>
+    <button onclick="startButtonOnclick()">Start</button>
     <ul></ul>
 </body>
 </html>
