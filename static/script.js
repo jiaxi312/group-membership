@@ -31,24 +31,36 @@ function startButtonOnclick() {
             if (response.status !== 200) {
                 alert(`Request return status error!!! Status:${response.status}`);
             } else {
-                fetchAndDisplayAllProcessors();
+                fetchAndDisplayAllProcessors(true);
             }
         });
     }
 }
 
+function crashButtonOnClick() {
+    console.log('crash clicked');
+    let selected = document.getElementById('crash_processor').value.toString();
+    console.log(selected);
+    let id = selected.substring(10, selected.length);
+    console.log(id);
+}
+
+
+function init() {
+    fetchAndDisplayAllProcessors(true);
+}
+
 /**
  * Fetches all the processors either working or crashed, and displays them in the page
  */
-function fetchAndDisplayAllProcessors() {
+function fetchAndDisplayAllProcessors(updateAll) {
     updateDate();
-
     const url = '/all-processors';
     fetch(url).then((response) => {
             if (response.status === 200) {
                 response.json().then((data) => {
-                    updateProcessor(data);
-                    setTimeout(() => fetchAndDisplayAllProcessors(), 1000);
+                    updateProcessor(data, updateAll);
+                    setTimeout(() => fetchAndDisplayAllProcessors(false), 1000);
                 });
             }
     });
@@ -61,19 +73,21 @@ function updateDate() {
     let d = new Date();
     let dateElement = document.getElementById('current_time');
     dateElement.textContent = d.toString();
-    setTimeout(() => updateDate(), 1000);
 }
 
 /**
  * Updates the processors displayed in the page
  * @param data
+ * @param updateAll
  */
-function updateProcessor(data) {
+function updateProcessor(data, updateAll) {
     let list = document.querySelector('ul')
     let selectElement = document.getElementById('crash_processor')
 
     removeAllChildNodes(list);
-    removeAllOptions(selectElement);
+    if (updateAll) {
+        removeAllOptions(selectElement);
+    }
 
     for (let processor of data) {
         let node = document.createElement('li');
@@ -83,9 +97,11 @@ function updateProcessor(data) {
                                 members: ${processor.members}`));
         list.appendChild(node);
 
-        let option = document.createElement('option');
-        option.text = `Processor ${processor.id}`;
-        selectElement.add(option);
+        if (updateAll) {
+            let option = document.createElement('option');
+            option.text = `Processor ${processor.id}`;
+            selectElement.add(option);
+        }
     }
 }
 

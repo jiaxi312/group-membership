@@ -40,6 +40,13 @@ def init_processors():
     return '', 200
 
 
+@app.route('/crash', methods=['POST'])
+def crash_processor():
+    data = request.json
+    print(data)
+    return '', 200
+
+
 def setup(kwargs):
     if 'channel' in properties:
         properties['channel'].close()

@@ -5,9 +5,9 @@
     <title>Group Membership Virtualization</title>
     <script src="/static/script.js"></script>
 </head>
-<body onload="fetchAndDisplayAllProcessors()">
+<body onload="init()">
     <label for="num_processors">Number of Processors:</label>
-    <input type="number" id="num_processors" name="num_processors" min="1" max="10" value="1" required>
+    <input type="number" id="num_processors" name="num_processors" min="1" max="5" value="1" required>
     <p></p>
     <label for="clock_sync_error">Max clock sync error (s):</label>
     <input type="number" id="clock_sync_error" name="clock_sync_error" min="1" max="10" value="1" required>
@@ -25,7 +25,7 @@
     <ul></ul>
     <label for="crash_processor">Select a processor to crash:</label>
     <select name="crash_processor" id="crash_processor"></select>
-    <button>Crash</button>
+    <button onclick="crashButtonOnClick()">Crash</button>
     <p id="current_time"></p>
 </body>
 </html>
