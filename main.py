@@ -9,11 +9,11 @@ def main():
     broadcast_delay, datagram_delay = 1, 1
     max_clock_sync_error = 1
     c = Channel(broadcast_delay, datagram_delay)
-    p1 = Processor(1, c, max_clock_sync_error, 5)
-    p2 = Processor(2, c, max_clock_sync_error, 5)
-    p3 = Processor(3, c, max_clock_sync_error, 5)
-    p4 = Processor(4, c, max_clock_sync_error, 5)
-    p5 = Processor(5, c, max_clock_sync_error, 5)
+    p1 = Processor(c, max_clock_sync_error, 5)
+    p2 = Processor(c, max_clock_sync_error, 5)
+    p3 = Processor(c, max_clock_sync_error, 5)
+    p4 = Processor(c, max_clock_sync_error, 5)
+    p5 = Processor(c, max_clock_sync_error, 5)
     # p3.status = Processor.CRASHED
     c.register_processor(p1)
     c.register_processor(p2)

@@ -77,5 +77,9 @@ class Channel:
     def broadcast_delay(self):
         return self._broadcast_delay
 
+    @property
+    def processors(self):
+        return self._all_processors
+
     def __contains__(self, item):
         return item in self._all_processors

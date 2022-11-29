@@ -28,10 +28,11 @@ class Processor:
 
     NORMAL = 1
     CRASHED = -1
+    ID_COUNT = 1
 
-    def __init__(self, id, channel, max_clock_sync_error, check_in_period):
+    def __init__(self, channel, max_clock_sync_error, check_in_period):
         """ Inits the Processor with given max clock synchronization error """
-        self._id = id
+        self._id = Processor.ID_COUNT
         self._current_group = 0
         self._status = Processor.NORMAL
         self._membership = set()
@@ -41,6 +42,7 @@ class Processor:
         self._check_timer = None
         self._check_in_period = check_in_period
         self._check_in_ids_count = {}
+        Processor.ID_COUNT += 1
 
     def init_join(self, broadcast_delay):
         """Initializes the join process, broadcasting the new-group message to all correct processors."""
@@ -158,6 +160,10 @@ class Processor:
         self._status = new_status
 
     @property
+    def members(self):
+        return [*self._membership]
+
+    @property
     def clock(self):
         """Returns the clock reading of this Processor
 
@@ -173,4 +179,4 @@ class Processor:
         return False
 
     def __str__(self):
-        return f'Processor {self.id}, group members: {self._membership} {self._check_in_ids_count}'
+        return f'Processor {self.id}, group members: {self.members}'
