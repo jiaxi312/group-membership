@@ -42,11 +42,19 @@ function fetchAndDisplayAllProcessors() {
         .then((response) => response.json())
         .then((data) => {
             let list = document.querySelector('ul')
+            let selectElement = document.getElementById('crash_processor')
+
             removeAllChildNodes(list);
+            removeAllOptions(selectElement);
+
             for (let processor of data) {
                 let node = document.createElement('li');
                 node.appendChild(document.createTextNode(`Processor ${processor.id}, members: ${processor.members}`));
                 list.appendChild(node);
+
+                let option = document.createElement('option');
+                option.text = `Processor ${processor.id}`;
+                selectElement.add(option);
             }
         });
 }
@@ -54,6 +62,13 @@ function fetchAndDisplayAllProcessors() {
 function removeAllChildNodes(parent) {
     while (parent.firstChild) {
         parent.removeChild(parent.firstChild);
+    }
+}
+
+function removeAllOptions(selectElement) {
+    let L = selectElement.options.length - 1;
+    for(let i = L; i >= 0; i--) {
+        selectElement.remove(i);
     }
 }
 
