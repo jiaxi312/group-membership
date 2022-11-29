@@ -70,6 +70,12 @@ class Channel:
             t = Timer(delay, self._send_message_to, args=(message, processor))
             t.start()
 
+    def close(self):
+        for processor in self._all_processors:
+            processor.crash()
+            del processor
+        del self
+
     def _assert_processor_registered(self, processor):
         assert processor in self._all_processors, f"Processor(id={processor.id}) not registered in this channel"
 

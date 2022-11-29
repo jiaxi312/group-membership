@@ -28,7 +28,7 @@ def init_join_for_all_processors():
     return '', 200
 
 
-@app.route('/init-processors', methods=['POST'])
+@app.route('/init', methods=['POST'])
 def init_processors():
     data = request.json
     print(data)
@@ -39,7 +39,11 @@ def init_processors():
     return '', 200
 
 
+
 def setup(kwargs):
+    if 'channel' in properties:
+        properties['channel'].close()
+
     properties.update(kwargs)
     channel = Channel(properties['broadcast_delay'], properties['datagram_delay'])
     for _ in range(int(properties['num_processors'])):

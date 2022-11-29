@@ -7,7 +7,7 @@ import time
 
 def main():
     broadcast_delay, datagram_delay = 1, 1
-    max_clock_sync_error = 0
+    max_clock_sync_error = 1
     c = Channel(broadcast_delay, datagram_delay)
     p1 = Processor(c, max_clock_sync_error, 5)
     p2 = Processor(c, max_clock_sync_error, 5)
@@ -58,3 +58,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # s1 = {1, 2, 3}
+    # s2 = set()
+    # s2.update(s1)
+    # print(s2)

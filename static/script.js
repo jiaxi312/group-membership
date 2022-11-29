@@ -1,6 +1,6 @@
 function startButtonOnclick() {
     console.log("Start clicked");
-    const url = '/init-processors'
+    const url = '/init'
     let numProcessors = document.getElementById('num_processors').value;
     let maxClockSyncError = document.getElementById('clock_sync_error').value;
     let broadcastDelay = document.getElementById('broadcast_delay').value;
@@ -67,7 +67,7 @@ function removeAllChildNodes(parent) {
 
 function removeAllOptions(selectElement) {
     let L = selectElement.options.length - 1;
-    for(let i = L; i >= 0; i--) {
+    for (let i = L; i >= 0; i--) {
         selectElement.remove(i);
     }
 }

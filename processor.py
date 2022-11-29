@@ -76,13 +76,6 @@ class Processor:
                                       args=[V + datetime.timedelta(seconds=self._check_in_period)])
             self._check_timer.start()
 
-    def _check_membership(self):
-        self._check_in_ids_count.add(self.id)
-        if self._check_in_ids_count != self._membership:
-            self._check_in_ids_count = set()
-            self.init_join()
-        self._check_in_ids_count = set()
-
     def receive(self, msg):
         """Handles the message receiving based on message type."""
         if msg.type == Message.NEW_GROUP:
@@ -90,6 +83,22 @@ class Processor:
         elif msg.type == Message.PRESENT:
             self._handle_present_msg(msg)
         return
+
+    def crash(self):
+        """Crashes this processor, all timer will be stopped"""
+        self._status = Processor.CRASHED
+        self._current_group = 0
+        self._membership = set()
+        self._check_in_ids_count = set()
+        if self._check_timer is not None:
+            self._check_timer.cancel()
+
+    def _check_membership(self):
+        self._check_in_ids_count.add(self.id)
+        if self._check_in_ids_count != self._membership:
+            self._check_in_ids_count = set()
+            self.init_join()
+        self._check_in_ids_count = set()
 
     def _handle_new_group_msg(self, msg):
         if self.clock > msg.content:
@@ -120,7 +129,6 @@ class Processor:
         return diff
 
     """Class properties"""
-
     @property
     def id(self):
         """Returns the id of this processor"""
