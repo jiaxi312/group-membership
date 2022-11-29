@@ -16,7 +16,8 @@ def index():
 def get_all_processors():
     data = []
     for processor in properties['channel'].processors:
-        data.append({'id': processor.id, 'members': processor.members})
+        status = 'Normal' if processor.status == Processor.NORMAL else 'Crashed'
+        data.append({'id': processor.id, 'status': status, 'members': processor.members})
     print(data)
     return jsonify(data), 200
 
@@ -37,7 +38,6 @@ def init_processors():
     setup(data)
     init_join_for_all_processors()
     return '', 200
-
 
 
 def setup(kwargs):

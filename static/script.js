@@ -1,3 +1,7 @@
+/**
+ * Handles the event when the start button is clicked, wraps the user typed data and
+ * sends to the backend
+ */
 function startButtonOnclick() {
     console.log("Start clicked");
     const url = '/init'
@@ -37,26 +41,52 @@ function startButtonOnclick() {
  * Fetches all the processors either working or crashed, and displays them in the page
  */
 function fetchAndDisplayAllProcessors() {
+    updateDate();
+
     const url = '/all-processors';
-    fetch(url)
-        .then((response) => response.json())
-        .then((data) => {
-            let list = document.querySelector('ul')
-            let selectElement = document.getElementById('crash_processor')
-
-            removeAllChildNodes(list);
-            removeAllOptions(selectElement);
-
-            for (let processor of data) {
-                let node = document.createElement('li');
-                node.appendChild(document.createTextNode(`Processor ${processor.id}, members: ${processor.members}`));
-                list.appendChild(node);
-
-                let option = document.createElement('option');
-                option.text = `Processor ${processor.id}`;
-                selectElement.add(option);
+    fetch(url).then((response) => {
+            if (response.status === 200) {
+                response.json().then((data) => {
+                    updateProcessor(data);
+                    setTimeout(() => fetchAndDisplayAllProcessors(), 1000);
+                });
             }
-        });
+    });
+}
+
+/**
+ * Updates the timer displays on the page every second
+ */
+function updateDate() {
+    let d = new Date();
+    let dateElement = document.getElementById('current_time');
+    dateElement.textContent = d.toString();
+    setTimeout(() => updateDate(), 1000);
+}
+
+/**
+ * Updates the processors displayed in the page
+ * @param data
+ */
+function updateProcessor(data) {
+    let list = document.querySelector('ul')
+    let selectElement = document.getElementById('crash_processor')
+
+    removeAllChildNodes(list);
+    removeAllOptions(selectElement);
+
+    for (let processor of data) {
+        let node = document.createElement('li');
+        node.appendChild(document.createTextNode(
+            `Processor ${processor.id}, 
+                                status: ${processor.status}, 
+                                members: ${processor.members}`));
+        list.appendChild(node);
+
+        let option = document.createElement('option');
+        option.text = `Processor ${processor.id}`;
+        selectElement.add(option);
+    }
 }
 
 function removeAllChildNodes(parent) {
