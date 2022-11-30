@@ -12,7 +12,7 @@ function startButtonOnclick() {
     let checkInPeriod = document.getElementById('check_in_period').value;
 
     if (!isCheckInPeriodValid(maxClockSyncError, broadcastDelay, datagramDelay, checkInPeriod)) {
-        alert('Error !!! Check in period is too small');
+        alert(`Check in period is too small. check in ${checkInPeriod} broadcastDelay ${broadcastDelay} max sync error ${maxClockSyncError}`);
     } else {
         let data = {
             num_processors: numProcessors,
@@ -47,7 +47,7 @@ function crashButtonOnClick() {
 
     fetch(url, {
         method: 'POST',
-        headers : {
+        headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(data)
@@ -76,12 +76,12 @@ function fetchAndDisplayAllProcessors(updateAll) {
     updateDate();
     const url = '/all-processors';
     fetch(url).then((response) => {
-            if (response.status === 200) {
-                response.json().then((data) => {
-                    updateProcessor(data, updateAll);
-                    timeout = setTimeout(() => fetchAndDisplayAllProcessors(false), 1000);
-                });
-            }
+        if (response.status === 200) {
+            response.json().then((data) => {
+                updateProcessor(data, updateAll);
+                timeout = setTimeout(() => fetchAndDisplayAllProcessors(false), 1000);
+            });
+        }
     });
 }
 
@@ -141,5 +141,5 @@ function removeAllOptions(selectElement) {
  * Returns true if the check in period is a valid value
  */
 function isCheckInPeriodValid(maxClockSyncError, broadcastDelay, datagramDelay, checkInPeriod) {
-    return checkInPeriod >= maxClockSyncError + broadcastDelay;
+    return parseFloat(checkInPeriod) >= parseFloat(maxClockSyncError) + parseFloat(broadcastDelay);
 }

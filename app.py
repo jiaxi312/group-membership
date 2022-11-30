@@ -9,6 +9,13 @@ properties = {}
 
 @app.route('/')
 def index():
+    properties['protocol'] = Processor.PERIODIC_BROADCAST_PROTOCOL
+    return render_template('index.html')
+
+
+@app.route('/attendance-list-protocol')
+def attendance_list_protocol():
+    properties['protocol'] = Processor.ATTENDANCE_LIST_PROTOCOL
     return render_template('index.html')
 
 
@@ -56,7 +63,8 @@ def setup(kwargs):
     properties.update(kwargs)
     channel = Channel(properties['broadcast_delay'], properties['datagram_delay'])
     for _ in range(int(properties['num_processors'])):
-        p = Processor(channel, properties['max_clock_sync_error'], properties['check_in_period'])
+        p = Processor(channel, properties['max_clock_sync_error'], properties['check_in_period'],
+                      properties['protocol'])
         channel.register_processor(p)
     properties['channel'] = channel
 
