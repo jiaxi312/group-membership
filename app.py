@@ -18,7 +18,6 @@ def get_all_processors():
     for processor in properties['channel'].processors:
         status = 'Normal' if processor.status == Processor.NORMAL else 'Crashed'
         data.append({'id': processor.id, 'status': status, 'members': processor.members})
-    print(data)
     return jsonify(data), 200
 
 
@@ -32,7 +31,6 @@ def init_join_for_all_processors():
 @app.route('/init', methods=['POST'])
 def init_processors():
     data = request.json
-    print(data)
     for key, value in data.items():
         data[key] = int(value)
     setup(data)
@@ -43,7 +41,11 @@ def init_processors():
 @app.route('/crash', methods=['POST'])
 def crash_processor():
     data = request.json
-    print(data)
+    processor_id = int(data['processor_id'])
+    processor = properties['channel'].find_processor(processor_id)
+    if processor is None:
+        return 'Invalid Processor', 404
+    processor.crash()
     return '', 200
 
 

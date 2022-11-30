@@ -76,6 +76,12 @@ class Channel:
             del processor
         del self
 
+    def find_processor(self, processor_id):
+        for processor in self.processors:
+            if processor.id == processor_id:
+                return processor
+        return None
+
     def _assert_processor_registered(self, processor):
         assert processor in self._all_processors, f"Processor(id={processor.id}) not registered in this channel"
 

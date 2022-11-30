@@ -39,12 +39,28 @@ function startButtonOnclick() {
 
 function crashButtonOnClick() {
     console.log('crash clicked');
+    const url = '/crash'
     let selected = document.getElementById('crash_processor').value.toString();
-    console.log(selected);
     let id = selected.substring(10, selected.length);
-    console.log(id);
+
+    let data = {processor_id: id}
+
+    fetch(url, {
+        method: 'POST',
+        headers : {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    }).then((response) => {
+        if (response.status !== 200) {
+            alert('Crash failed');
+        } else {
+            fetchAndDisplayAllProcessors(true);
+        }
+    });
 }
 
+var timeout = undefined;
 
 function init() {
     fetchAndDisplayAllProcessors(true);
@@ -54,13 +70,16 @@ function init() {
  * Fetches all the processors either working or crashed, and displays them in the page
  */
 function fetchAndDisplayAllProcessors(updateAll) {
+    if (timeout !== undefined) {
+        clearTimeout(timeout);
+    }
     updateDate();
     const url = '/all-processors';
     fetch(url).then((response) => {
             if (response.status === 200) {
                 response.json().then((data) => {
                     updateProcessor(data, updateAll);
-                    setTimeout(() => fetchAndDisplayAllProcessors(false), 1000);
+                    timeout = setTimeout(() => fetchAndDisplayAllProcessors(false), 1000);
                 });
             }
     });
