@@ -73,8 +73,8 @@ class Processor:
         self._channel.broadcast(m)
 
     def schedule_broadcast(self, V):
-        if self._protocol == self.PERIODIC_BROADCAST_PROTOCOL:
-            if self.clock <= V:
+        if self.clock <= V:
+            if self._protocol == self.PERIODIC_BROADCAST_PROTOCOL:
                 print(f'Send check in present message, id={self.id}')
                 self.broadcast_present_msg(V)
                 self._check_member_timer = Timer(self._channel.broadcast_delay + self._max_clock_sync_error,
@@ -83,22 +83,23 @@ class Processor:
                 self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
                                           args=[V + datetime.timedelta(seconds=self._check_in_period)])
                 self._check_timer.start()
-        elif self._protocol == self.ATTENDANCE_LIST_PROTOCOL:
-            self._cancel_all_timer()
-            sorted_members = sorted([*self._membership])
-            pos = sorted_members.index(self.id)
-            if pos == 0:
-                # The processor is the one send the attendance list
-                m = self._channel.create_message(self, Message.ATTENDANCE_LIST)
-                m.receiver = self._channel.find_processor(sorted_members[1 % len(sorted_members)])
-                self._channel.send_message(m)
-                pos = len(sorted_members)
+            elif self._protocol == self.ATTENDANCE_LIST_PROTOCOL:
+                self._cancel_all_timer()
+                sorted_members = sorted([*self._membership])
+                pos = sorted_members.index(self.id)
+                if pos == 0:
+                    # The processor is the one send the attendance list
+                    m = self._channel.create_message(self, Message.ATTENDANCE_LIST)
+                    m.receiver = self._channel.find_processor(sorted_members[1 % len(sorted_members)])
+                    self._channel.send_message(m)
+                    pos = len(sorted_members)
 
-            self._check_member_timer = Timer(pos * self._channel.datagram_delay,
-                                             self._check_attendance_list)
-            self._check_member_timer.start()
-            self._check_timer = Timer(self._check_in_period, self.schedule_broadcast, args=[0])
-            self._check_timer.start()
+                self._check_member_timer = Timer(pos * self._channel.datagram_delay,
+                                                 self._check_attendance_list)
+                self._check_member_timer.start()
+                self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
+                                          args=[V + datetime.timedelta(seconds=self._check_in_period)])
+                self._check_timer.start()
 
     def _check_attendance_list(self):
         if not self._attendance_list_checked:
