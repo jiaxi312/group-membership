@@ -54,7 +54,8 @@ class Channel:
 
     def send_message(self, message):
         self._assert_processor_registered(message.receiver)
-
+        if message.receiver.status == Processor.CRASHED:
+            return
         delay = random.random() * self._datagram_delay
         t = Timer(delay, self._send_message_to, args=(message, message.receiver))
         t.start()
@@ -88,6 +89,10 @@ class Channel:
     @property
     def broadcast_delay(self):
         return self._broadcast_delay
+
+    @property
+    def datagram_delay(self):
+        return self._datagram_delay
 
     @property
     def processors(self):

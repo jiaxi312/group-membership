@@ -30,7 +30,11 @@ class Processor:
     CRASHED = -1
     ID_COUNT = 1
 
-    def __init__(self, channel, max_clock_sync_error, check_in_period):
+    PERIODIC_BROADCAST_PROTOCOL = 10
+    ATTENDANCE_LIST_PROTOCOL = 11
+    NEIGHBOR_SURVEILLANCE_PROTOCOL = 12
+
+    def __init__(self, channel, max_clock_sync_error, check_in_period, check_in_policy):
         """ Inits the Processor with given max clock synchronization error """
         self._id = Processor.ID_COUNT
         self._current_group = 0
@@ -40,8 +44,11 @@ class Processor:
         self._max_clock_sync_error = max_clock_sync_error
         self._clock_diff = (random.random() - 0.5) * max_clock_sync_error
         self._check_timer = None
+        self._check_member_timer = None
         self._check_in_period = check_in_period
         self._check_in_ids_count = set()
+        self._protocol = check_in_policy
+        self._attendance_list_checked = False
         Processor.ID_COUNT += 1
 
     def init_join(self):
@@ -66,15 +73,39 @@ class Processor:
         self._channel.broadcast(m)
 
     def schedule_broadcast(self, V):
-        if self.clock <= V:
-            print(f'Send check in present message, id={self.id}')
-            self.broadcast_present_msg(V)
-            t = Timer(self._channel.broadcast_delay + self._max_clock_sync_error,
-                      self._check_membership)
-            t.start()
-            self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
-                                      args=[V + datetime.timedelta(seconds=self._check_in_period)])
+        if self._protocol == self.PERIODIC_BROADCAST_PROTOCOL:
+            if self.clock <= V:
+                print(f'Send check in present message, id={self.id}')
+                self.broadcast_present_msg(V)
+                self._check_member_timer = Timer(self._channel.broadcast_delay + self._max_clock_sync_error,
+                                                 self._check_membership)
+                self._check_member_timer.start()
+                self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
+                                          args=[V + datetime.timedelta(seconds=self._check_in_period)])
+                self._check_timer.start()
+        elif self._protocol == self.ATTENDANCE_LIST_PROTOCOL:
+            self._cancel_all_timer()
+            sorted_members = sorted([*self._membership])
+            pos = sorted_members.index(self.id)
+            if pos == 0:
+                # The processor is the one send the attendance list
+                m = self._channel.create_message(self, Message.ATTENDANCE_LIST)
+                m.receiver = self._channel.find_processor(sorted_members[1 % len(sorted_members)])
+                self._channel.send_message(m)
+                pos = len(sorted_members)
+
+            self._check_member_timer = Timer(pos * self._channel.datagram_delay,
+                                             self._check_attendance_list)
+            self._check_member_timer.start()
+            self._check_timer = Timer(self._check_in_period, self.schedule_broadcast, args=[0])
             self._check_timer.start()
+
+    def _check_attendance_list(self):
+        if not self._attendance_list_checked:
+            print('attendance check failed, init join')
+            self.init_join()
+        else:
+            self._attendance_list_checked = False
 
     def receive(self, msg):
         """Handles the message receiving based on message type."""
@@ -82,6 +113,8 @@ class Processor:
             self._handle_new_group_msg(msg)
         elif msg.type == Message.PRESENT:
             self._handle_present_msg(msg)
+        elif msg.type == Message.ATTENDANCE_LIST:
+            self._handle_attendance_list_msg(msg)
         return
 
     def crash(self):
@@ -92,6 +125,14 @@ class Processor:
         self._check_in_ids_count = set()
         if self._check_timer is not None:
             self._check_timer.cancel()
+        if self._check_member_timer is not None:
+            self._check_member_timer.cancel()
+
+    def _cancel_all_timer(self):
+        if self._check_timer is not None:
+            self._check_timer.cancel()
+        if self._check_member_timer is not None:
+            self._check_member_timer.cancel()
 
     def _check_membership(self):
         self._check_in_ids_count.add(self.id)
@@ -106,6 +147,8 @@ class Processor:
             return
         if self._check_timer is not None:
             self._check_timer.cancel()
+        if self._check_member_timer is not None:
+            self._check_member_timer.cancel()
         sender_id = msg.sender.id
         self._membership = {self.id, sender_id}
         V = msg.content
@@ -124,11 +167,23 @@ class Processor:
         else:
             self._check_in_ids_count.add(msg.sender.id)
 
+    def _handle_attendance_list_msg(self, msg):
+        self._attendance_list_checked = True
+        sorted_members = sorted(self.members)
+        pos = sorted_members.index(self.id)
+        receiver_id = sorted_members[(pos + 1) % len(sorted_members)]
+        msg.receiver = self._channel.find_processor(receiver_id)
+        print(
+            f'id={self.id} receive attendance list msg from {msg.sender.id} '
+            f'send attendance list msg to {msg.receiver.id}')
+        self._channel.send_message(msg)
+
     def _compute_time_diff(self, V):
         diff = V.timestamp() + self._check_in_period - self.clock.timestamp()
         return diff
 
     """Class properties"""
+
     @property
     def id(self):
         """Returns the id of this processor"""
