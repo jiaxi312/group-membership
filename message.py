@@ -14,8 +14,9 @@ class Message:
     """
 
     NEW_GROUP = 1
-    ATTENDANCE_LIST = 2
-    PRESENT = 3
+    PRESENT = 2
+    ATTENDANCE_LIST = 3
+    NEIGHBORHOOD = 4
     ID_COUNT = 0
 
     def __init__(self, sender, channel, msg_type=NEW_GROUP):

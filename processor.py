@@ -49,6 +49,7 @@ class Processor:
         self._check_in_ids_count = set()
         self._protocol = check_in_policy
         self._attendance_list_checked = False
+        self._neighbor_present = False
         Processor.ID_COUNT += 1
 
     def init_join(self):
@@ -100,6 +101,20 @@ class Processor:
                 self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
                                           args=[V + datetime.timedelta(seconds=self._check_in_period)])
                 self._check_timer.start()
+            elif self._protocol == self.NEIGHBOR_SURVEILLANCE_PROTOCOL:
+                sorted_numbers = sorted([*self._membership])
+                pos = sorted_numbers.index(self.id)
+                next_pos = (pos + 1) % len(sorted_numbers)
+                m = self._channel.create_message(self, Message.NEIGHBORHOOD)
+                m.receiver = self._channel.find_processor(sorted_numbers[next_pos])
+                self._channel.send_message(m)
+
+                self._check_member_timer = Timer(self._channel.datagram_delay, self._check_neighbor_present)
+                self._check_member_timer.start()
+
+                self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
+                                          args=[V + datetime.timedelta(seconds=self._check_in_period)])
+                self._check_timer.start()
 
     def _check_attendance_list(self):
         if not self._attendance_list_checked:
@@ -107,6 +122,13 @@ class Processor:
             self.init_join()
         else:
             self._attendance_list_checked = False
+
+    def _check_neighbor_present(self):
+        if not self._neighbor_present:
+            print('neighbor failed')
+            self.init_join()
+        else:
+            self._neighbor_present = False
 
     def receive(self, msg):
         """Handles the message receiving based on message type."""
@@ -116,6 +138,8 @@ class Processor:
             self._handle_present_msg(msg)
         elif msg.type == Message.ATTENDANCE_LIST:
             self._handle_attendance_list_msg(msg)
+        elif msg.type == Message.NEIGHBORHOOD:
+            self._handle_neighbor_present(msg)
         return
 
     def crash(self):
@@ -178,6 +202,10 @@ class Processor:
             f'id={self.id} receive attendance list msg from {msg.sender.id} '
             f'send attendance list msg to {msg.receiver.id}')
         self._channel.send_message(msg)
+
+    def _handle_neighbor_present(self, msg):
+        self._neighbor_present = True
+        print(f'id={self.id} receives neighbor present from {msg.sender.id}')
 
     def _compute_time_diff(self, V):
         diff = V.timestamp() + self._check_in_period - self.clock.timestamp()
