@@ -55,6 +55,7 @@ class Processor:
     def init_join(self):
         """Initializes the join process, broadcasting the new-group message to all correct processors."""
         print(f'processor {self.id} init group')
+        self._cancel_all_timer()
         self._membership = set()
         m = self._channel.create_message(self, Message.NEW_GROUP)
         broadcast_delay = self._channel.broadcast_delay

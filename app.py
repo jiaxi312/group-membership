@@ -19,6 +19,12 @@ def attendance_list_protocol():
     return render_template('index.html')
 
 
+@app.route('/neighbor-protocol')
+def neighborhood_protocol():
+    properties['protocol'] = Processor.NEIGHBOR_SURVEILLANCE_PROTOCOL
+    return render_template('index.html')
+
+
 @app.route('/all-processors')
 def get_all_processors():
     data = []
