@@ -110,7 +110,7 @@ class Processor:
                 m.receiver = self._channel.find_processor(sorted_numbers[next_pos])
                 self._channel.send_message(m)
 
-                self._check_member_timer = Timer(self._channel.datagram_delay, self._check_neighbor_present)
+                self._check_member_timer = Timer(self._channel.datagram_delay + self._max_clock_sync_error, self._check_neighbor_present)
                 self._check_member_timer.start()
 
                 self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
@@ -179,7 +179,7 @@ class Processor:
         self._membership = {self.id, sender_id}
         V = msg.content
         self.broadcast_present_msg(V)
-        self._check_timer = Timer(self._check_in_period, self.schedule_broadcast,
+        self._check_timer = Timer(self._check_in_period + self._channel.broadcast_delay, self.schedule_broadcast,
                                   args=[V + datetime.timedelta(seconds=self._check_in_period)])
         self._check_timer.start()
 
