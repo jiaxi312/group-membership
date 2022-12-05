@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Group Membership Virtualization</title>
+    <link rel="stylesheet" href="/static/style.css">
     <script src="/static/script.js"></script>
 </head>
 <body onload="init()">
+    <h1 id="headline"></h1>
     <label for="num_processors">Number of Processors:</label>
     <input type="number" id="num_processors" name="num_processors" min="1" max="5" value="1" required>
     <p></p>
@@ -21,11 +23,11 @@
     <label for="check_in_period">Check in period (s):</label>
     <input type="number" id="check_in_period" name="check_in_period" min="1" max="500" value="5" required>
     <p></p>
-    <button onclick="startButtonOnclick()">Start</button>
+    <button class="button-25" onclick="startButtonOnclick()">Start</button>
     <ul></ul>
     <label for="crash_processor">Select a processor to crash:</label>
     <select name="crash_processor" id="crash_processor"></select>
-    <button onclick="crashButtonOnClick()">Crash</button>
+    <button class="button-24" onclick="crashButtonOnClick()">Crash</button>
     <p id="current_time"></p>
 </body>
 </html>

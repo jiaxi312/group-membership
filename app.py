@@ -10,6 +10,12 @@ properties = {}
 @app.route('/')
 def index():
     properties['protocol'] = Processor.PERIODIC_BROADCAST_PROTOCOL
+    return render_template('welcome.html')
+
+
+@app.route('/periodic-broadcast-protocol')
+def periodic_broadcast_protocol():
+    properties['protocol'] = Processor.PERIODIC_BROADCAST_PROTOCOL
     return render_template('index.html')
 
 
@@ -19,7 +25,7 @@ def attendance_list_protocol():
     return render_template('index.html')
 
 
-@app.route('/neighbor-protocol')
+@app.route('/neighborhood-surveillance-protocol')
 def neighborhood_protocol():
     properties['protocol'] = Processor.NEIGHBOR_SURVEILLANCE_PROTOCOL
     return render_template('index.html')

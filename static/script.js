@@ -60,9 +60,15 @@ function crashButtonOnClick() {
     });
 }
 
-var timeout = undefined;
+let timeout = undefined;
 
 function init() {
+    let url = new URL(window.location.href);
+    let pathname = url.pathname.slice(1);
+    let words = pathname.split("-");
+    words = words.map(word => toTitleCase(word));
+
+    document.getElementById("headline").textContent = words.join(" ");
     fetchAndDisplayAllProcessors(true);
 }
 
@@ -142,4 +148,22 @@ function removeAllOptions(selectElement) {
  */
 function isCheckInPeriodValid(maxClockSyncError, broadcastDelay, datagramDelay, checkInPeriod) {
     return parseFloat(checkInPeriod) >= parseFloat(maxClockSyncError) + parseFloat(broadcastDelay);
+}
+
+
+function redirectionButtonOnClick(protocol) {
+    window.location.href = `/${protocol}`;
+}
+
+
+/**
+ * Returns a string with the title case of given string
+ */
+function toTitleCase(str) {
+    return str.replace(
+        /\w\S*/g,
+        function(txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        }
+    );
 }
